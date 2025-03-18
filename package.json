@@ -1,0 +1,38 @@
+{
+  "name": "walletkit_poc",
+  "version": "1.0.0",
+  "main": "index.ts",
+  "scripts": {
+    "start": "expo start",
+    "android": "expo start --android",
+    "ios": "expo start --ios",
+    "web": "expo start --web"
+  },
+  "dependencies": {
+    "@walletconnect/react-native-compat": "^2.19.1",
+    "@walletconnect/sign-client": "^2.19.1",
+    "@walletconnect/utils": "^2.19.1",
+    "ethers": "^6.13.5",
+    "expo": "~52.0.38",
+    "expo-camera": "~16.0.18",
+    "expo-constants": "~17.0.8",
+    "expo-image-manipulator": "~13.0.6",
+    "expo-status-bar": "~2.0.1",
+    "node-libs-browser": "^2.2.1",
+    "node-libs-react-native": "^1.2.1",
+    "react": "18.3.1",
+    "react-native": "0.76.7",
+    "react-native-crypto": "^2.2.0",
+    "react-native-dotenv": "^3.4.11",
+    "react-native-fast-crypto": "^2.2.0",
+    "react-native-get-random-values": "~1.11.0",
+    "react-native-url-polyfill": "^2.0.0"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.25.2",
+    "@types/react": "~18.3.12",
+    "@types/react-native-get-random-values": "^1.8.2",
+    "typescript": "^5.3.3"
+  },
+  "private": true
+}
