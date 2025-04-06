@@ -4,7 +4,7 @@ import { SafeAreaView, StatusBar, StyleSheet } from 'react-native';
 // Import our global polyfills - this MUST be the first import
 import './global';
 
-import EthereumTestScreen from './EthereumTestScreen';
+import EthereumTestScreen2 from './EthereumTestScreen2';
 
 export default function App() {
   // Log when the app starts to verify initialization
@@ -15,7 +15,7 @@ export default function App() {
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="dark-content" />
-      <EthereumTestScreen />
+      <EthereumTestScreen2 />
     </SafeAreaView>
   );
 }
