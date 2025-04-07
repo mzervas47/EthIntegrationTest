@@ -25,7 +25,7 @@ const NFT_CONTRACT_ABI = [
   'function ownerOf(uint256 tokenId) public view returns (address)',
 ];
 
-const EtheruemTestScreenTwo: React.FC = () => {
+const EthereumTestScreen2: React.FC = () => {
   const [providerStatus, setProviderStatus] = useState<
     'idle' | 'connecting' | 'connected' | 'error'
   >('idle');
@@ -35,13 +35,13 @@ const EtheruemTestScreenTwo: React.FC = () => {
     'idle'
   );
   const [walletAddress, setWalletAddress] = useState<string | null>(null);
-  const [erroMessage, setErrorMessage] = useState<string | null>(null);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [signClient, setSignClient] = useState<SignClient | null>(null);
   const [tokenURI, setTokenURI] = useState<string>('https://example.com/metadata.json');
   const [mintStatus, setMintStatus] = useState<'idle' | 'pending' | 'success' | 'error'>('idle');
   const [txHash, setTxHash] = useState<string | null>(null);
   const [session, setSession] = useState<any | null>(null);
-  const [contractCreated, setContractCreated] = useState<Boolean>(false);
+  const [contractCreated, setContractCreated] = useState<boolean>(false);
 
   const globalProvider = new ethers.JsonRpcProvider(
     `https://eth-sepolia.g.alchemy.com/v2/${ALCHEMY_API_KEY}`
@@ -61,6 +61,7 @@ const EtheruemTestScreenTwo: React.FC = () => {
 
       const blockNumber = await provider.getBlockNumber();
       console.log('Latest block number:', blockNumber);
+      setProviderStatus('connected');
       setBlockNumber(blockNumber);
     } catch (error: any) {
       console.error('Provider error:', error);
@@ -180,6 +181,8 @@ const EtheruemTestScreenTwo: React.FC = () => {
       setMintStatus('pending');
       setErrorMessage(null);
 
+      const contract = new ethers.Interface(NFT_CONTRACT_ABI);
+
       const data = contractData.encodeFunctionData('mint', [tokenURI]);
 
       const value = ethers.parseEther('0.001');
@@ -292,7 +295,7 @@ const EtheruemTestScreenTwo: React.FC = () => {
         )}
       </View>
 
-      <View style={styles.seciton}>
+      <View style={styles.section}>
         <Text style={styles.sectionTitle}>Wallet Connection</Text>
         {renderStatusIndicator(walletStatus)}
 
@@ -304,7 +307,7 @@ const EtheruemTestScreenTwo: React.FC = () => {
           <Text style={styles.buttonText}>Connect Wallet</Text>
         </TouchableOpacity>
 
-        {walletAdderess && (
+        {walletAddress && (
           <View style={styles.dataContainer}>
             <Text style={styles.dataTitle}>Connected Wallet Address:</Text>
             <Text selectable style={styles.dataText}>
@@ -350,9 +353,135 @@ const EtheruemTestScreenTwo: React.FC = () => {
           )}
         </View>
       )}
-      
+
+      {errorMessage && (
+        <View style={styles.errorContainer}>
+          <Text style={styles.errorTitle}>Error</Text>
+          <Text style={styles.errorMessage} selectable>
+            {errorMessage}
+          </Text>
+        </View>
+      )}
     </ScrollView>
   );
 };
 
-const styles = StyleSheet.create({});
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#f5f5f5',
+  },
+  contentContainer: {
+    padding: 20,
+    paddingTop: 60,
+  },
+  title: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    marginBottom: 20,
+    textAlign: 'center',
+  },
+  section: {
+    backgroundColor: 'white',
+    borderRadius: 10,
+    padding: 15,
+    marginBottom: 20,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    marginBottom: 10,
+  },
+  statusRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 15,
+  },
+  statusIdle: {
+    color: '#666',
+    marginBottom: 15,
+  },
+  statusConnecting: {
+    color: '#FF9500',
+    marginBottom: 15,
+  },
+  statusConnected: {
+    color: 'green',
+    marginBottom: 15,
+  },
+  statusError: {
+    color: 'red',
+    marginBottom: 15,
+  },
+  button: {
+    backgroundColor: '#FF9500',
+    padding: 12,
+    borderRadius: 8,
+    alignItems: 'center',
+    marginVertical: 10,
+  },
+  buttonText: {
+    color: 'white',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  inputLabel: {
+    fontSize: 14,
+    fontWeight: '500',
+    marginBottom: 5,
+  },
+  input: {
+    borderWidth: 1,
+    borderColor: '#ddd',
+    borderRadius: 8,
+    padding: 10,
+    marginBottom: 15,
+  },
+  dataContainer: {
+    marginTop: 15,
+    padding: 10,
+    backgroundColor: '#f9f9f9',
+    borderRadius: 6,
+  },
+  dataTitle: {
+    fontWeight: '600',
+    marginBottom: 5,
+  },
+  dataText: {
+    fontWeight: '400',
+    marginBottom: 5,
+  },
+  errorContainer: {
+    padding: 15,
+    backgroundColor: '#FFEEEE',
+    borderRadius: 8,
+    borderColor: '#FFCCCC',
+    borderWidth: 1,
+  },
+  errorTitle: {
+    color: 'red',
+    fontWeight: '600',
+    marginBottom: 5,
+  },
+  errorMessage: {
+    color: '#CC0000',
+  },
+  linkButton: {
+    marginTop: 10,
+    padding: 8,
+    backgroundColor: '#e8e8e8',
+    borderRadius: 4,
+    alignItems: 'center',
+  },
+  linkButtonText: {
+    color: '#0066CC',
+    fontWeight: '500',
+  },
+});
+
+export default EthereumTestScreen2;
