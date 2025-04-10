@@ -18,7 +18,7 @@ import {
 } from '@env';
 
 const NFT_CONTRACT_ABI = [
-  'function mint(string memory tokenURI_) public payable',
+  'function mintNFT(string memory tokenURI_) public payable',
   'function tokenURI(uint256 tokenId) public view returns (string memory)',
   'function MINT_PRICE() public view returns (uint256)',
   'function withdraw(address payable recipient) public',
@@ -42,6 +42,8 @@ const EthereumTestScreen2: React.FC = () => {
   const [txHash, setTxHash] = useState<string | null>(null);
   const [session, setSession] = useState<any | null>(null);
   const [contractCreated, setContractCreated] = useState<boolean>(false);
+  const canMint = walletStatus === 'connected' && contractCreated && tokenURI.trim().length > 0 && mintStatus !== 'pending';
+  
 
   const globalProvider = new ethers.JsonRpcProvider(
     `https://eth-sepolia.g.alchemy.com/v2/${ALCHEMY_API_KEY}`
@@ -281,7 +283,7 @@ const EthereumTestScreen2: React.FC = () => {
         <TouchableOpacity
           style={styles.button}
           onPress={creatContract}
-          disabled={contractCreated === true}
+          disabled={contractCreated}
         >
           <Text style={styles.buttonText}>Create Contract and get Mint Price</Text>
         </TouchableOpacity>
@@ -317,54 +319,46 @@ const EthereumTestScreen2: React.FC = () => {
         )}
       </View>
 
-      {walletStatus === 'connected' && (
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Mint NFT</Text>
+      <View style={styles.section}>
+        <Text style={styles.sectionTitle}>Mint NFT</Text>
 
-          <Text style={styles.inputLabel}>Token URI:</Text>
-          <TextInput
-            style={styles.input}
-            value={tokenURI}
-            onChangeText={setTokenURI}
-            placeholder="Enter token URI (metadata URL)"
-          />
+        <Text style={styles.inputLabel}>Token URI:</Text>
+        <TextInput
+        style={styles.input}
+        value={tokenURI}
+        onChangeText={setTokenURI}
+        placeholder="Enter token URI (metadata URL)"
+        editable={walletStatus === 'connected' && contractCreated}
+        />
 
-          <TouchableOpacity
-            style={styles.button}
-            onPress={mintNFT}
-            disabled={mintStatus === 'pending'}
-          >
-            <Text style={styles.buttonText}>Mint NFT</Text>
-          </TouchableOpacity>
+        <TouchableOpacity
+        style={styles.button}
+        onPress={mintNFT}
+        disabled={canMint}
+        >
+          <Text style={styles.buttonText}>Mint NFT</Text>
+        </TouchableOpacity>
 
-          {renderMintStatus(mintStatus)}
+        {renderMintStatus(mintStatus)}
 
-          {txHash && (
-            <View style={styles.dataContainer}>
-              <Text style={styles.dataTitle}>Transaction Hash:</Text>
-              <Text selectable>{txHash}</Text>
-              <TouchableOpacity
-                style={styles.linkButton}
-                onPress={() => Linking.openURL(`https://sepolia.etherscan.io/tx/${txHash}`)}
-              >
-                <Text style={styles.linkButtonText}>View on Etherscan</Text>
-              </TouchableOpacity>
-            </View>
-          )}
+        {txHash && (
+          <View style={styles.dataContainer}>
+            <Text style={styles.dataTitle}>Transaction Hash:</Text>
+            <Text selectable>{txHash}</Text>
+            <TouchableOpacity
+            style={styles.linkButton}
+            onPress={() => Linking.openURL(`https://sepolia.etherscan.io/tx/${txHash}`)}
+            >
+              <Text style={styles.linkButtonText}>View on Etherscan</Text>
+            </TouchableOpacity>
+          </View>
+        )}
         </View>
-      )}
-
-      {errorMessage && (
-        <View style={styles.errorContainer}>
-          <Text style={styles.errorTitle}>Error</Text>
-          <Text style={styles.errorMessage} selectable>
-            {errorMessage}
-          </Text>
-        </View>
-      )}
     </ScrollView>
-  );
+  )
 };
+
+
 
 const styles = StyleSheet.create({
   container: {
