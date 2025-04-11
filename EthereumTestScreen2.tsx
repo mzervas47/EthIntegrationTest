@@ -35,16 +35,52 @@ const EthereumTestScreen2: React.FC = () => {
     'idle'
   );
   const [walletAddress, setWalletAddress] = useState<string | null>(null);
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [signClient, setSignClient] = useState<SignClient | null>(null);
   const [tokenURI, setTokenURI] = useState<string>('https://example.com/metadata.json');
   const [mintStatus, setMintStatus] = useState<'idle' | 'pending' | 'success' | 'error'>('idle');
   const [txHash, setTxHash] = useState<string | null>(null);
   const [session, setSession] = useState<any | null>(null);
   const [contractCreated, setContractCreated] = useState<boolean>(false);
-  const canMint = walletStatus === 'connected' && contractCreated && tokenURI.trim().length > 0 && mintStatus !== 'pending';
-  
 
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
+  type ErrorType = 'provider' | 'wallet' | 'contract' | 'mint';
+  
+  type ErrorState = {
+    provider: string | null;
+    wallet: string | null;
+    contract: string | null;
+    mint: string | null;
+  };
+  
+  const [errors, setErrors] = useState<ErrorState>({
+    provider: null,
+    contract: null,
+    wallet: null,
+    mint: null,
+  });
+
+  const setError = (type: ErrorType, message: string) => {
+    setErrors(prev => ({
+      ...prev,
+      [type]:message
+    }));
+  };
+
+  const clearError = (type: ErrorType) => {
+    setErrors(prev => ({
+      ...prev,
+      [type]: null
+    }));
+  };
+
+  const canMint =
+    walletStatus === 'connected' &&
+    contractCreated &&
+    tokenURI.trim().length > 0 &&
+    mintStatus !== 'pending';
+
+    
   const globalProvider = new ethers.JsonRpcProvider(
     `https://eth-sepolia.g.alchemy.com/v2/${ALCHEMY_API_KEY}`
   );
@@ -214,7 +250,7 @@ const EthereumTestScreen2: React.FC = () => {
     } catch (error: any) {
       console.error('Minting error:', error);
       setMintStatus('error');
-      setErrorMessage(`Minting error: ${error.message || 'Unknown erro'}`);
+      setErrorMessage(`Minting error: ${error.message || 'Unknown error'}`);
     }
   };
 
@@ -255,8 +291,19 @@ const EthereumTestScreen2: React.FC = () => {
         return <Text style={styles.statusError}>❌ Minting Failed</Text>;
       default:
         return null;
-    }
+    };
   };
+
+  const renderError = (type: ErrorType) => {
+    if (!errors[type]) return null;
+
+    return (
+      <View style={styles.errorContainer}>
+        <Text style={styles.errorTitle}>Error</Text>
+        <Text style={styles.errorMessage}>{errors[type]}</Text>
+      </View>
+    )
+  }
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
@@ -280,11 +327,7 @@ const EthereumTestScreen2: React.FC = () => {
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>Create Contract Instance</Text>
 
-        <TouchableOpacity
-          style={styles.button}
-          onPress={creatContract}
-          disabled={contractCreated}
-        >
+        <TouchableOpacity style={styles.button} onPress={creatContract} disabled={contractCreated}>
           <Text style={styles.buttonText}>Create Contract and get Mint Price</Text>
         </TouchableOpacity>
 
@@ -324,18 +367,14 @@ const EthereumTestScreen2: React.FC = () => {
 
         <Text style={styles.inputLabel}>Token URI:</Text>
         <TextInput
-        style={styles.input}
-        value={tokenURI}
-        onChangeText={setTokenURI}
-        placeholder="Enter token URI (metadata URL)"
-        editable={walletStatus === 'connected' && contractCreated}
+          style={styles.input}
+          value={tokenURI}
+          onChangeText={setTokenURI}
+          placeholder="Enter token URI (metadata URL)"
+          editable={walletStatus === 'connected' && contractCreated}
         />
 
-        <TouchableOpacity
-        style={styles.button}
-        onPress={mintNFT}
-        disabled={canMint}
-        >
+        <TouchableOpacity style={styles.button} onPress={mintNFT} disabled={canMint}>
           <Text style={styles.buttonText}>Mint NFT</Text>
         </TouchableOpacity>
 
@@ -346,19 +385,17 @@ const EthereumTestScreen2: React.FC = () => {
             <Text style={styles.dataTitle}>Transaction Hash:</Text>
             <Text selectable>{txHash}</Text>
             <TouchableOpacity
-            style={styles.linkButton}
-            onPress={() => Linking.openURL(`https://sepolia.etherscan.io/tx/${txHash}`)}
+              style={styles.linkButton}
+              onPress={() => Linking.openURL(`https://sepolia.etherscan.io/tx/${txHash}`)}
             >
               <Text style={styles.linkButtonText}>View on Etherscan</Text>
             </TouchableOpacity>
           </View>
         )}
-        </View>
+      </View>
     </ScrollView>
-  )
+  );
 };
-
-
 
 const styles = StyleSheet.create({
   container: {
