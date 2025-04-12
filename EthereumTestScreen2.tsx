@@ -42,35 +42,35 @@ const EthereumTestScreen2: React.FC = () => {
   const [session, setSession] = useState<any | null>(null);
   const [contractCreated, setContractCreated] = useState<boolean>(false);
 
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  type ErrorType = 'provider' | 'SDK' | 'wallet' | 'contract' | 'mint';
 
-  type ErrorType = 'provider' | 'wallet' | 'contract' | 'mint';
-  
   type ErrorState = {
     provider: string | null;
+    SDK: string | null;
     wallet: string | null;
     contract: string | null;
     mint: string | null;
   };
-  
+
   const [errors, setErrors] = useState<ErrorState>({
     provider: null,
-    contract: null,
+    SDK: null,
     wallet: null,
+    contract: null,
     mint: null,
   });
 
   const setError = (type: ErrorType, message: string) => {
-    setErrors(prev => ({
+    setErrors((prev) => ({
       ...prev,
-      [type]:message
+      [type]: message,
     }));
   };
 
   const clearError = (type: ErrorType) => {
-    setErrors(prev => ({
+    setErrors((prev) => ({
       ...prev,
-      [type]: null
+      [type]: null,
     }));
   };
 
@@ -80,15 +80,15 @@ const EthereumTestScreen2: React.FC = () => {
     tokenURI.trim().length > 0 &&
     mintStatus !== 'pending';
 
-    
   const globalProvider = new ethers.JsonRpcProvider(
     `https://eth-sepolia.g.alchemy.com/v2/${ALCHEMY_API_KEY}`
   );
   const testProviderConnection = async () => {
     try {
+      
+      clearError('provider');
       setProviderStatus('connecting');
-      setErrorMessage('null');
-
+      
       console.log('Creating provider');
 
       const provider = globalProvider;
@@ -98,17 +98,24 @@ const EthereumTestScreen2: React.FC = () => {
       console.log('Getting latest block');
 
       const blockNumber = await provider.getBlockNumber();
-      console.log('Latest block number:', blockNumber);
-      setProviderStatus('connected');
+      
       setBlockNumber(blockNumber);
+      
+      console.log('Latest block number:', blockNumber);
+      
+      setProviderStatus('connected');
     } catch (error: any) {
+      
       console.error('Provider error:', error);
+      
+      setError('provider', error.message || 'Unknown error');
+      
       setProviderStatus('error');
-      setErrorMessage(`Provider error: ${error.message || 'unknown error'}`);
     }
   };
 
   const initializeWalletConnect = async () => {
+    clearError('SDK');
     try {
       const client = await SignClient.init({
         projectId: WALLET_CONNECT_PROJECT_ID,
@@ -124,16 +131,16 @@ const EthereumTestScreen2: React.FC = () => {
       return client;
     } catch (error: any) {
       console.error('SDK init error:', error);
-      setErrorMessage(`SDK init error: ${error.message || 'unknown error'}`);
+      setError('SDK', error.message || 'Unknown error');
       return null;
     }
   };
 
   const connectWallet = async () => {
     try {
+      clearError('wallet');
       setWalletStatus('connecting');
-      setErrorMessage(null);
-
+      
       const client = signClient || (await initializeWalletConnect());
       if (!client) {
         throw new Error('Failed to init SDK');
@@ -171,12 +178,13 @@ const EthereumTestScreen2: React.FC = () => {
       }
     } catch (error: any) {
       console.error('Wallet connection error');
+      setError('wallet', error.message || 'Unknown error');
       setWalletStatus('error');
-      setErrorMessage(`Wallet connection error: ${error.message || 'Unknown error'}`);
     }
   };
 
   const creatContract = async () => {
+    clearError('contract');
     try {
       const provider = globalProvider;
       if (!provider) {
@@ -206,22 +214,25 @@ const EthereumTestScreen2: React.FC = () => {
       return contract;
     } catch (error: any) {
       console.error('Contract error', error);
+      setError('contract', error.message || 'unknown error');
       return null;
     }
   };
 
   const mintNFT = async () => {
+    clearError('mint');
+
     try {
       if (!signClient || !session || !walletAddress) {
         throw new Error('Wallet not connected');
       }
 
       setMintStatus('pending');
-      setErrorMessage(null);
+      
 
       const contract = new ethers.Interface(NFT_CONTRACT_ABI);
 
-      const data = contractData.encodeFunctionData('mint', [tokenURI]);
+      const data = contract.encodeFunctionData('mint', [tokenURI]);
 
       const value = ethers.parseEther('0.001');
 
@@ -249,8 +260,8 @@ const EthereumTestScreen2: React.FC = () => {
       setMintStatus('success');
     } catch (error: any) {
       console.error('Minting error:', error);
+      setError('mint', error.message || 'unknown error');
       setMintStatus('error');
-      setErrorMessage(`Minting error: ${error.message || 'Unknown error'}`);
     }
   };
 
@@ -291,7 +302,7 @@ const EthereumTestScreen2: React.FC = () => {
         return <Text style={styles.statusError}>❌ Minting Failed</Text>;
       default:
         return null;
-    };
+    }
   };
 
   const renderError = (type: ErrorType) => {
@@ -302,8 +313,8 @@ const EthereumTestScreen2: React.FC = () => {
         <Text style={styles.errorTitle}>Error</Text>
         <Text style={styles.errorMessage}>{errors[type]}</Text>
       </View>
-    )
-  }
+    );
+  };
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
@@ -322,6 +333,7 @@ const EthereumTestScreen2: React.FC = () => {
         </TouchableOpacity>
         <Text style={styles.dataTitle}>Latest Block:</Text>
         <Text style={styles.dataText}>{latestBlockNumber}</Text>
+        {renderError('provider')}
       </View>
 
       <View style={styles.section}>
@@ -338,6 +350,7 @@ const EthereumTestScreen2: React.FC = () => {
             <Text style={styles.dataText}>Block - {contractData.blockNumber}</Text>
           </View>
         )}
+        {renderError('contract')}
       </View>
 
       <View style={styles.section}>
@@ -360,6 +373,8 @@ const EthereumTestScreen2: React.FC = () => {
             </Text>
           </View>
         )}
+        {renderError('SDK')}
+        {renderError('wallet')}
       </View>
 
       <View style={styles.section}>
@@ -374,7 +389,7 @@ const EthereumTestScreen2: React.FC = () => {
           editable={walletStatus === 'connected' && contractCreated}
         />
 
-        <TouchableOpacity style={styles.button} onPress={mintNFT} disabled={canMint}>
+        <TouchableOpacity style={styles.button} onPress={mintNFT} disabled={!canMint}>
           <Text style={styles.buttonText}>Mint NFT</Text>
         </TouchableOpacity>
 
@@ -392,6 +407,7 @@ const EthereumTestScreen2: React.FC = () => {
             </TouchableOpacity>
           </View>
         )}
+        {renderError('mint')}
       </View>
     </ScrollView>
   );
