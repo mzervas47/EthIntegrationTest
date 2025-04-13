@@ -17,13 +17,7 @@ import {
   WALLET_CONNECT_PROJECT_ID,
 } from '@env';
 
-const NFT_CONTRACT_ABI = [
-  'function mintNFT(string memory tokenURI_) public payable',
-  'function tokenURI(uint256 tokenId) public view returns (string memory)',
-  'function MINT_PRICE() public view returns (uint256)',
-  'function withdraw(address payable recipient) public',
-  'function ownerOf(uint256 tokenId) public view returns (address)',
-];
+import { globalProvider, NFT_CONTRACT_ABI } from './config';
 
 const EthereumTestScreen2: React.FC = () => {
   const [providerStatus, setProviderStatus] = useState<
@@ -41,6 +35,7 @@ const EthereumTestScreen2: React.FC = () => {
   const [txHash, setTxHash] = useState<string | null>(null);
   const [session, setSession] = useState<any | null>(null);
   const [contractCreated, setContractCreated] = useState<boolean>(false);
+
 
   type ErrorType = 'provider' | 'SDK' | 'wallet' | 'contract' | 'mint';
 
@@ -80,9 +75,7 @@ const EthereumTestScreen2: React.FC = () => {
     tokenURI.trim().length > 0 &&
     mintStatus !== 'pending';
 
-  const globalProvider = new ethers.JsonRpcProvider(
-    `https://eth-sepolia.g.alchemy.com/v2/${ALCHEMY_API_KEY}`
-  );
+   
   const testProviderConnection = async () => {
     try {
       
@@ -122,8 +115,8 @@ const EthereumTestScreen2: React.FC = () => {
         metadata: {
           name: 'PhotoHash Tester App',
           description: 'Test Web3 API for PhotoHash App',
-          url: '',
-          icons: [''],
+          url: 'https://reown.com/',
+          icons: ['https://walletconnect.com/walletconnect-logo.png'],
         },
       });
 
@@ -177,7 +170,9 @@ const EthereumTestScreen2: React.FC = () => {
         throw new Error('No accounts found in session');
       }
     } catch (error: any) {
-      console.error('Wallet connection error');
+      console.error('Wallet connection error - FULL ERROR:', error);
+      console.error('Error message:', error.message);
+      console.error('Error stack:', error.stack);
       setError('wallet', error.message || 'Unknown error');
       setWalletStatus('error');
     }
@@ -232,32 +227,46 @@ const EthereumTestScreen2: React.FC = () => {
 
       const contract = new ethers.Interface(NFT_CONTRACT_ABI);
 
-      const data = contract.encodeFunctionData('mint', [tokenURI]);
+      const data = contract.encodeFunctionData('mintNFT', [tokenURI]);
 
-      const value = ethers.parseEther('0.001');
+      const value = ethers.parseEther('0.01');
 
+      console.log("Transaction to send:", {
+          from: walletAddress,
+          to: SEPOLIA_TEST_CONTRACT_ADDRESS_TWO,
+          data: data,
+          value: value.toString(),  
+      })
+      
       const tx = {
         from: walletAddress,
         to: SEPOLIA_TEST_CONTRACT_ADDRESS_TWO,
         data: data,
         value: value.toString(),
+        gasLimit: '0x' + (300000).toString(16),
+        maxFeePerGas: '0x' + (5000000000).toString(16)
       };
 
       const chainId = session.namespaces.eip155.chains[0].split(':')[1];
+      console.log("Chain ID being used:", chainId);
 
-      const result = (await signClient.request({
-        topic: session.topic,
-        chainId: `eip155:${chainId}`,
-        request: {
-          method: 'eth_sendTransaction',
-          params: [tx],
-        },
-      })) as string;
-
-      console.log('Transaction hash:', result);
-
-      setTxHash(result);
-      setMintStatus('success');
+      console.log("Before request call, session topic:", session.topic);
+      try {
+        const result = await signClient.request({
+          topic: session.topic,
+          chainId: `eip155:${chainId}`,
+          request: {
+            method: 'eth_sendTransaction',
+            params: [tx],
+          },
+        }) as string;
+        console.log("After request call, result:", result);
+        console.log('Transaction hash:', result);
+        setTxHash(result);
+        setMintStatus('success');
+      } catch (error) {
+        console.error("Request call failed:", error);
+      }   
     } catch (error: any) {
       console.error('Minting error:', error);
       setError('mint', error.message || 'unknown error');
