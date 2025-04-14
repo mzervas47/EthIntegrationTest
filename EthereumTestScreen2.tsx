@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
-  StyleSheet,
   TouchableOpacity,
   ScrollView,
   ActivityIndicator,
@@ -11,12 +10,8 @@ import {
 } from 'react-native';
 import { ethers } from 'ethers';
 import SignClient from '@walletconnect/sign-client';
-import {
-  ALCHEMY_API_KEY,
-  SEPOLIA_TEST_CONTRACT_ADDRESS_TWO,
-  WALLET_CONNECT_PROJECT_ID,
-} from '@env';
-
+import { SEPOLIA_TEST_CONTRACT_ADDRESS_TWO, WALLET_CONNECT_PROJECT_ID } from '@env';
+import { styles } from './styles';
 import { globalProvider, NFT_CONTRACT_ABI } from './config';
 
 const EthereumTestScreen2: React.FC = () => {
@@ -35,7 +30,6 @@ const EthereumTestScreen2: React.FC = () => {
   const [txHash, setTxHash] = useState<string | null>(null);
   const [session, setSession] = useState<any | null>(null);
   const [contractCreated, setContractCreated] = useState<boolean>(false);
-
 
   type ErrorType = 'provider' | 'SDK' | 'wallet' | 'contract' | 'mint';
 
@@ -69,19 +63,21 @@ const EthereumTestScreen2: React.FC = () => {
     }));
   };
 
+  const onEstimationError = (message: string) => {
+    setError('mint', message);
+  };
+
   const canMint =
     walletStatus === 'connected' &&
     contractCreated &&
     tokenURI.trim().length > 0 &&
     mintStatus !== 'pending';
 
-   
   const testProviderConnection = async () => {
     try {
-      
       clearError('provider');
       setProviderStatus('connecting');
-      
+
       console.log('Creating provider');
 
       const provider = globalProvider;
@@ -91,18 +87,17 @@ const EthereumTestScreen2: React.FC = () => {
       console.log('Getting latest block');
 
       const blockNumber = await provider.getBlockNumber();
-      
+
       setBlockNumber(blockNumber);
-      
+
       console.log('Latest block number:', blockNumber);
-      
+
       setProviderStatus('connected');
     } catch (error: any) {
-      
       console.error('Provider error:', error);
-      
+
       setError('provider', error.message || 'Unknown error');
-      
+
       setProviderStatus('error');
     }
   };
@@ -133,7 +128,7 @@ const EthereumTestScreen2: React.FC = () => {
     try {
       clearError('wallet');
       setWalletStatus('connecting');
-      
+
       const client = signClient || (await initializeWalletConnect());
       if (!client) {
         throw new Error('Failed to init SDK');
@@ -223,7 +218,6 @@ const EthereumTestScreen2: React.FC = () => {
       }
 
       setMintStatus('pending');
-      
 
       const contract = new ethers.Interface(NFT_CONTRACT_ABI);
 
@@ -231,42 +225,42 @@ const EthereumTestScreen2: React.FC = () => {
 
       const value = ethers.parseEther('0.01');
 
-      console.log("Transaction to send:", {
-          from: walletAddress,
-          to: SEPOLIA_TEST_CONTRACT_ADDRESS_TWO,
-          data: data,
-          value: value.toString(),  
-      })
-      
+      console.log('Transaction to send:', {
+        from: walletAddress,
+        to: SEPOLIA_TEST_CONTRACT_ADDRESS_TWO,
+        data: data,
+        value: value.toString(),
+      });
+
       const tx = {
         from: walletAddress,
         to: SEPOLIA_TEST_CONTRACT_ADDRESS_TWO,
         data: data,
         value: value.toString(),
         gasLimit: '0x' + (300000).toString(16),
-        maxFeePerGas: '0x' + (5000000000).toString(16)
+        maxFeePerGas: '0x' + (5000000000).toString(16),
       };
 
       const chainId = session.namespaces.eip155.chains[0].split(':')[1];
-      console.log("Chain ID being used:", chainId);
+      console.log('Chain ID being used:', chainId);
 
-      console.log("Before request call, session topic:", session.topic);
+      console.log('Before request call, session topic:', session.topic);
       try {
-        const result = await signClient.request({
+        const result = (await signClient.request({
           topic: session.topic,
           chainId: `eip155:${chainId}`,
           request: {
             method: 'eth_sendTransaction',
             params: [tx],
           },
-        }) as string;
-        console.log("After request call, result:", result);
+        })) as string;
+        console.log('After request call, result:', result);
         console.log('Transaction hash:', result);
         setTxHash(result);
         setMintStatus('success');
       } catch (error) {
-        console.error("Request call failed:", error);
-      }   
+        console.error('Request call failed:', error);
+      }
     } catch (error: any) {
       console.error('Minting error:', error);
       setError('mint', error.message || 'unknown error');
@@ -421,123 +415,5 @@ const EthereumTestScreen2: React.FC = () => {
     </ScrollView>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#f5f5f5',
-  },
-  contentContainer: {
-    padding: 20,
-    paddingTop: 60,
-  },
-  title: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    marginBottom: 20,
-    textAlign: 'center',
-  },
-  section: {
-    backgroundColor: 'white',
-    borderRadius: 10,
-    padding: 15,
-    marginBottom: 20,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 2,
-  },
-  sectionTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    marginBottom: 10,
-  },
-  statusRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 15,
-  },
-  statusIdle: {
-    color: '#666',
-    marginBottom: 15,
-  },
-  statusConnecting: {
-    color: '#FF9500',
-    marginBottom: 15,
-  },
-  statusConnected: {
-    color: 'green',
-    marginBottom: 15,
-  },
-  statusError: {
-    color: 'red',
-    marginBottom: 15,
-  },
-  button: {
-    backgroundColor: '#FF9500',
-    padding: 12,
-    borderRadius: 8,
-    alignItems: 'center',
-    marginVertical: 10,
-  },
-  buttonText: {
-    color: 'white',
-    fontSize: 16,
-    fontWeight: '600',
-  },
-  inputLabel: {
-    fontSize: 14,
-    fontWeight: '500',
-    marginBottom: 5,
-  },
-  input: {
-    borderWidth: 1,
-    borderColor: '#ddd',
-    borderRadius: 8,
-    padding: 10,
-    marginBottom: 15,
-  },
-  dataContainer: {
-    marginTop: 15,
-    padding: 10,
-    backgroundColor: '#f9f9f9',
-    borderRadius: 6,
-  },
-  dataTitle: {
-    fontWeight: '600',
-    marginBottom: 5,
-  },
-  dataText: {
-    fontWeight: '400',
-    marginBottom: 5,
-  },
-  errorContainer: {
-    padding: 15,
-    backgroundColor: '#FFEEEE',
-    borderRadius: 8,
-    borderColor: '#FFCCCC',
-    borderWidth: 1,
-  },
-  errorTitle: {
-    color: 'red',
-    fontWeight: '600',
-    marginBottom: 5,
-  },
-  errorMessage: {
-    color: '#CC0000',
-  },
-  linkButton: {
-    marginTop: 10,
-    padding: 8,
-    backgroundColor: '#e8e8e8',
-    borderRadius: 4,
-    alignItems: 'center',
-  },
-  linkButtonText: {
-    color: '#0066CC',
-    fontWeight: '500',
-  },
-});
 
 export default EthereumTestScreen2;
