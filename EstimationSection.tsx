@@ -83,8 +83,23 @@ const EstimationSection: React.FC<EstimationProps> = ({
   };
 
   return (
-    <View style={styles.section}>
-      <Text style={styles.sectionTitle}>Estimate Mint Cost</Text>
+    <View>
+      {estimation.estimatedGas && estimation.estimatedGasPrice && estimation.mintPrice ? (
+        <View style={styles.dataContainer}>
+          <Text style={styles.dataTitle}>
+            Estimated Gas: <Text style={styles.dataText}>{estimation.estimatedGas}</Text>
+          </Text>
+          <Text style={styles.dataTitle}>
+            Estimated Gas Price: <Text style={styles.dataText}>{estimation.estimatedGasPrice}</Text>
+          </Text>
+          <Text style={styles.dataTitle}>
+            Mint Price: <Text style={styles.dataText}>{estimation.mintPrice}</Text>
+          </Text>
+        </View>
+      ) : (
+        <Text style={styles.dataText}>Not yet calculated</Text>
+      )}
+      {/* how would I make a refresh button work here? not to create a new view, but to refresh the above view. state hook?*/}
     </View>
   );
 };
