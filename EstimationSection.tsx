@@ -82,6 +82,10 @@ const EstimationSection: React.FC<EstimationProps> = ({
     }
   };
 
+  const handleRefresh = () => {
+    estimateMintTransaction();
+  };
+
   return (
     <View>
       {estimation.estimatedGas && estimation.estimatedGasPrice && estimation.mintPrice ? (
@@ -99,7 +103,13 @@ const EstimationSection: React.FC<EstimationProps> = ({
       ) : (
         <Text style={styles.dataText}>Not yet calculated</Text>
       )}
-      {/* how would I make a refresh button work here? not to create a new view, but to refresh the above view. state hook?*/}
+      <TouchableOpacity
+        style={styles.button}
+        onPress={handleRefresh}
+        disabled={!walletAddress || !contractCreated}
+      >
+        <Text style={styles.buttonText}>Refresh Estimated Costs</Text>
+      </TouchableOpacity>
     </View>
   );
 };
