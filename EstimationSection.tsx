@@ -16,14 +16,14 @@ import { buildMintTransaction } from './transactionUtils';
 import { styles } from './styles';
 import { useDebounce } from './useDebounce';
 
-interface EstimationProps {
+export interface EstimationProps {
   walletAddress: string | null;
   tokenURI: string;
   contractCreated: boolean;
   onEstimationError: (message: string) => void;
 }
 
-const EstimationSection: React.FC<EstimationProps> = ({
+export const EstimationSection: React.FC<EstimationProps> = ({
   walletAddress,
   tokenURI,
   contractCreated,
@@ -59,22 +59,22 @@ const EstimationSection: React.FC<EstimationProps> = ({
 
       console.log('Using mint price:', ethers.formatEther(mintPrice), 'ETH');
 
-      const gasEstimate = await globalProvider.estimateGas(tx);
-      console.log('Estimated gas:', gasEstimate.toString());
+      const gasUnits = await globalProvider.estimateGas(tx);
+      console.log('Estimated gas:', gasUnits.toString());
 
       const feeData = await globalProvider.getFeeData();
       if (!feeData.gasPrice) {
         throw new Error('Gas price not available');
       }
 
-      const estimatedGasPriceWei = gasEstimate * feeData.gasPrice;
-
-      const estimatedGasPriceEth = ethers.formatEther(estimatedGasPriceWei);
+      const estimatedGasPricePerUnit = feeData.gasPrice;
+      const totalGasWei = gasUnits * estimatedGasPricePerUnit;
+      const totalGasEth = ethers.formatEther(totalGasWei);
 
       setEstimation({
-        estimatedGas: gasEstimate.toString(),
-        estimatedGasPrice: estimatedGasPriceEth,
-        mintPrice: mintPrice,
+        estimatedGas: gasUnits.toString(),
+        estimatedGasPrice: totalGasEth,
+        mintPrice: ethers.formatEther(mintPrice),
       });
     } catch (error: any) {
       console.error('Gas estimation error:', error);

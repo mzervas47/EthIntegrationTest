@@ -327,6 +327,8 @@ const EthereumTestScreen2: React.FC = () => {
     );
   };
 
+  console.log('⎡EstimationSection⎦ is:', EstimationSection);
+
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
       <Text style={styles.title}> Test NFT Minting App</Text>
