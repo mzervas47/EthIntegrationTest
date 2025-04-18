@@ -13,6 +13,7 @@ import SignClient from '@walletconnect/sign-client';
 import { SEPOLIA_TEST_CONTRACT_ADDRESS_TWO, WALLET_CONNECT_PROJECT_ID } from '@env';
 import { styles } from './styles';
 import { globalProvider, NFT_CONTRACT_ABI } from './config';
+import { EstimationSection, EstimationProps } from './EstimationSection';
 
 const EthereumTestScreen2: React.FC = () => {
   const [providerStatus, setProviderStatus] = useState<
@@ -65,6 +66,13 @@ const EthereumTestScreen2: React.FC = () => {
 
   const onEstimationError = (message: string) => {
     setError('mint', message);
+  };
+
+  const estimationProps: EstimationProps = {
+    walletAddress: walletAddress,
+    tokenURI: tokenURI,
+    contractCreated: contractCreated,
+    onEstimationError: onEstimationError,
   };
 
   const canMint =
@@ -412,6 +420,8 @@ const EthereumTestScreen2: React.FC = () => {
         )}
         {renderError('mint')}
       </View>
+
+      <EstimationSection {...estimationProps} />
     </ScrollView>
   );
 };
