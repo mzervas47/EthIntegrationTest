@@ -2,7 +2,7 @@ import { ethers } from 'ethers';
 
 export const prepareMintTransactionData = (tokenURI: string, abi: string[]) => {
   const iface = new ethers.Interface(abi);
-  const data = iface.encodeFunctionData('mintNFT', [tokenURI]);
+  const data = iface.encodeFunctionData('mintNFT(string)', [tokenURI]);
   return data;
 };
 
@@ -29,18 +29,18 @@ export const buildMintTransaction = async (
 ) => {
   const data = prepareMintTransactionData(tokenURI, abi);
 
-  let mintPrice;
-  if (provider) {
-    mintPrice = await getMintPrice(provider, contractAddress, abi);
-  } else {
-    mintPrice = ethers.parseEther('0.01');
-  }
+  const fallback = ethers.parseEther('0.01');
+  const mintPrice = provider
+  ? await getMintPrice(provider, contractAddress, abi)
+  : fallback;
+
+  const mintValueHex = '0x' + mintPrice.toString(16);
 
   const tx = {
     from: walletAddress,
     to: contractAddress,
     data: data,
-    value: mintPrice.toString(),
+    value: mintValueHex,
   };
 
   return { tx, data, mintPrice };

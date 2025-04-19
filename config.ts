@@ -6,11 +6,11 @@ import {
 } from '@env';
 
 export const NFT_CONTRACT_ABI = [
-  'function mintNFT(string memory tokenURI_) public payable',
-  'function tokenURI(uint256 tokenId) public view returns (string memory)',
-  'function MINT_PRICE() public view returns (uint256)',
-  'function withdraw(address payable recipient) public',
-  'function ownerOf(uint256 tokenId) public view returns (address)',
+  'function mintNFT(string) external payable',
+  'function tokenURI(uint256) public view returns (string memory)',
+  'function MINT_PRICE() external view returns (uint256)',
+  'function withdraw() external',
+  'function ownerOf(uint256) public view returns (address)',
 ];
 
 export const globalProvider = new ethers.JsonRpcProvider(

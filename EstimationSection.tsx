@@ -68,8 +68,15 @@ export const EstimationSection: React.FC<EstimationProps> = ({
       }
 
       const estimatedGasPricePerUnit = feeData.gasPrice;
+      console.log('Estimated price per gas unit:', estimatedGasPricePerUnit.toString());
+      
       const totalGasWei = gasUnits * estimatedGasPricePerUnit;
+      console.log('Total gas wei:', totalGasWei.toString());
+      
       const totalGasEth = ethers.formatEther(totalGasWei);
+      console.log('Total gas eth:', totalGasEth.toString());
+      
+      console.log('Contract is at:', SEPOLIA_TEST_CONTRACT_ADDRESS_TWO);
 
       setEstimation({
         estimatedGas: gasUnits.toString(),

@@ -13,6 +13,7 @@ import SignClient from '@walletconnect/sign-client';
 import { SEPOLIA_TEST_CONTRACT_ADDRESS_TWO, WALLET_CONNECT_PROJECT_ID } from '@env';
 import { styles } from './styles';
 import { globalProvider, NFT_CONTRACT_ABI } from './config';
+import { buildMintTransaction } from './transactionUtils';
 import { EstimationSection, EstimationProps } from './EstimationSection';
 
 const EthereumTestScreen2: React.FC = () => {
@@ -196,6 +197,11 @@ const EthereumTestScreen2: React.FC = () => {
         NFT_CONTRACT_ABI,
         provider
       );
+      const minimalAbi = contract.interface.format(true);
+      console.log("Minimal ABI:", minimalAbi);
+
+      const maxAbi = contract.interface.format(false);
+      console.log("Max ABI:", maxAbi);
 
       console.log('Calling get Mint Price');
 
@@ -227,42 +233,39 @@ const EthereumTestScreen2: React.FC = () => {
 
       setMintStatus('pending');
 
-      const contract = new ethers.Interface(NFT_CONTRACT_ABI);
+      const { tx, data: rawData, mintPrice } = await buildMintTransaction(
+        globalProvider,
+        walletAddress,
+        tokenURI,
+        SEPOLIA_TEST_CONTRACT_ADDRESS_TWO,
+        NFT_CONTRACT_ABI
+      )
 
-      const data = contract.encodeFunctionData('mintNFT', [tokenURI]);
+      const expected = ethers.id('mintNFT(string)').slice(0, 10);
+      const actual = rawData.slice(0, 10);
+      console.log('Expected selector:', expected);
+      console.log('Actual selector:', actual);
+      console.log('Raw calldata:', rawData)
+      
+      const onChainCode = await globalProvider.getCode(tx.to);
+      console.log("On-chain code length:", onChainCode === '0x' ? 0 : onChainCode.length);
 
-      const value = ethers.parseEther('0.01');
+      const mintValueHex = '0x' + mintPrice.toString(16);
 
-      console.log('Transaction to send:', {
-        from: walletAddress,
-        to: SEPOLIA_TEST_CONTRACT_ADDRESS_TWO,
-        data: data,
-        value: value.toString(),
-      });
-
-      const tx = {
-        from: walletAddress,
-        to: SEPOLIA_TEST_CONTRACT_ADDRESS_TWO,
-        data: data,
-        value: value.toString(),
-        gasLimit: '0x' + (300000).toString(16),
-        maxFeePerGas: '0x' + (5000000000).toString(16),
-      };
+      console.log('Sending tx:', { ...tx, value: mintValueHex,});
 
       const chainId = session.namespaces.eip155.chains[0].split(':')[1];
-      console.log('Chain ID being used:', chainId);
-
-      console.log('Before request call, session topic:', session.topic);
+      
       try {
         const result = (await signClient.request({
           topic: session.topic,
           chainId: `eip155:${chainId}`,
           request: {
             method: 'eth_sendTransaction',
-            params: [tx],
+            params: [{...tx, value: mintValueHex,}],
           },
         })) as string;
-        console.log('After request call, result:', result);
+        
         console.log('Transaction hash:', result);
         setTxHash(result);
         setMintStatus('success');
@@ -327,7 +330,6 @@ const EthereumTestScreen2: React.FC = () => {
     );
   };
 
-  console.log('⎡EstimationSection⎦ is:', EstimationSection);
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
