@@ -32,6 +32,7 @@ const EthereumTestScreen2: React.FC = () => {
   const [txHash, setTxHash] = useState<string | null>(null);
   const [session, setSession] = useState<any | null>(null);
   const [contractCreated, setContractCreated] = useState<boolean>(false);
+  const [tokenId, setMintedTokenId] = useState<string | null>(null);
 
   type ErrorType = 'provider' | 'SDK' | 'wallet' | 'contract' | 'mint';
 
