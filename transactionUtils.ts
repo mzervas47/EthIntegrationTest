@@ -47,7 +47,7 @@ export const buildMintTransaction = async (
 export const extractTokenId = async (
   txHash: string,
   provider: ethers.JsonRpcProvider,
-  contractAbi: string
+  contractAbi: string []
 ) => {
   try {
     const receipt = await provider.waitForTransaction(txHash);

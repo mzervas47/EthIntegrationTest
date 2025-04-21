@@ -13,7 +13,7 @@ import SignClient from '@walletconnect/sign-client';
 import { SEPOLIA_TEST_CONTRACT_ADDRESS_TWO, WALLET_CONNECT_PROJECT_ID } from '@env';
 import { styles } from './styles';
 import { globalProvider, NFT_CONTRACT_ABI } from './config';
-import { buildMintTransaction } from './transactionUtils';
+import { buildMintTransaction, extractTokenId } from './transactionUtils';
 import { EstimationSection, EstimationProps } from './EstimationSection';
 
 const EthereumTestScreen2: React.FC = () => {
@@ -32,7 +32,7 @@ const EthereumTestScreen2: React.FC = () => {
   const [txHash, setTxHash] = useState<string | null>(null);
   const [session, setSession] = useState<any | null>(null);
   const [contractCreated, setContractCreated] = useState<boolean>(false);
-  const [tokenId, setMintedTokenId] = useState<string | null>(null);
+  const [mintedTokenId, setMintedTokenId] = useState<string | null>(null);
 
   type ErrorType = 'provider' | 'SDK' | 'wallet' | 'contract' | 'mint';
 
@@ -199,10 +199,10 @@ const EthereumTestScreen2: React.FC = () => {
         provider
       );
       const minimalAbi = contract.interface.format(true);
-      console.log("Minimal ABI:", minimalAbi);
+      console.log('Minimal ABI:', minimalAbi);
 
       const maxAbi = contract.interface.format(false);
-      console.log("Max ABI:", maxAbi);
+      console.log('Max ABI:', maxAbi);
 
       console.log('Calling get Mint Price');
 
@@ -234,41 +234,49 @@ const EthereumTestScreen2: React.FC = () => {
 
       setMintStatus('pending');
 
-      const { tx, data: rawData, mintPrice } = await buildMintTransaction(
+      const {
+        tx,
+        data: rawData,
+        mintPrice,
+      } = await buildMintTransaction(
         globalProvider,
         walletAddress,
         tokenURI,
         SEPOLIA_TEST_CONTRACT_ADDRESS_TWO,
         NFT_CONTRACT_ABI
-      )
+      );
 
       const expected = ethers.id('mintNFT(string)').slice(0, 10);
       const actual = rawData.slice(0, 10);
       console.log('Expected selector:', expected);
       console.log('Actual selector:', actual);
-      console.log('Raw calldata:', rawData)
-      
+      console.log('Raw calldata:', rawData);
+
       const onChainCode = await globalProvider.getCode(tx.to);
-      console.log("On-chain code length:", onChainCode === '0x' ? 0 : onChainCode.length);
+      console.log('On-chain code length:', onChainCode === '0x' ? 0 : onChainCode.length);
 
       const mintValueHex = '0x' + mintPrice.toString(16);
 
-      console.log('Sending tx:', { ...tx, value: mintValueHex,});
+      console.log('Sending tx:', { ...tx, value: mintValueHex });
 
       const chainId = session.namespaces.eip155.chains[0].split(':')[1];
-      
+
       try {
         const result = (await signClient.request({
           topic: session.topic,
           chainId: `eip155:${chainId}`,
           request: {
             method: 'eth_sendTransaction',
-            params: [{...tx, value: mintValueHex,}],
+            params: [{ ...tx, value: mintValueHex }],
           },
         })) as string;
-        
+
         console.log('Transaction hash:', result);
         setTxHash(result);
+
+        const tokenId = await extractTokenId(result, globalProvider, NFT_CONTRACT_ABI);
+        setMintedTokenId(tokenId);
+
         setMintStatus('success');
       } catch (error) {
         console.error('Request call failed:', error);
@@ -330,7 +338,6 @@ const EthereumTestScreen2: React.FC = () => {
       </View>
     );
   };
-
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
