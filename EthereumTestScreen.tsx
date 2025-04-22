@@ -82,12 +82,15 @@ const EthereumTestScreen: React.FC = () => {
       const client = await SignClient.init({
         projectId: WALLET_CONNECT_PROJECT_ID,
         metadata: {
-          name: 'Ethereum Test App',
-          description: 'Testing Ethereum integration with React Native',
+          name: 'PhotoHash POC',
+          description: 'Testing and proving core features for PhotoHash',
           // check importance of these metadata properties
-          url: 'https://reown.com/',
+          url: 'https://photohash.io',
           // fix this
-          icons: ['https://walletconnect.com/walletconnect-logo.png'],
+          icons: ['https://photohash.io/icon.png'],
+          redirect: {
+            native: 'photohashpoc://',
+          },
         },
       });
 

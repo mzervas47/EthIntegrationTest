@@ -118,10 +118,15 @@ const EthereumTestScreen2: React.FC = () => {
       const client = await SignClient.init({
         projectId: WALLET_CONNECT_PROJECT_ID,
         metadata: {
-          name: 'PhotoHash Tester App',
-          description: 'Test Web3 API for PhotoHash App',
-          url: 'https://reown.com/',
-          icons: ['https://walletconnect.com/walletconnect-logo.png'],
+          name: 'PhotoHash POC',
+          description: 'Testing and proving core features for PhotoHash',
+          // check importance of these metadata properties
+          url: 'https://photohash.io',
+          // fix this
+          icons: ['https://photohash.io/icon.png'],
+          redirect: {
+            native: 'photohashpoc://',
+          },
         },
       });
 
@@ -422,6 +427,17 @@ const EthereumTestScreen2: React.FC = () => {
           <View style={styles.dataContainer}>
             <Text style={styles.dataTitle}>Transaction Hash:</Text>
             <Text selectable>{txHash}</Text>
+            <Text style={styles.dataTitle}>
+              Contract Address:<Text selectable>{SEPOLIA_TEST_CONTRACT_ADDRESS_TWO}</Text>
+              
+              { mintedTokenId && (
+                <>
+                <Text style={styles.dataTitle}>Token ID:</Text>
+                <Text selectable>{mintedTokenId}</Text>
+                </>
+
+              )}
+            </Text>
             <TouchableOpacity
               style={styles.linkButton}
               onPress={() => Linking.openURL(`https://sepolia.etherscan.io/tx/${txHash}`)}
