@@ -278,11 +278,11 @@ const EthereumTestScreen2: React.FC = () => {
 
         console.log('Transaction hash:', result);
         setTxHash(result);
+        setMintStatus('success');
 
         const tokenId = await extractTokenId(result, globalProvider, NFT_CONTRACT_ABI);
         setMintedTokenId(tokenId);
-
-        setMintStatus('success');
+ 
       } catch (error) {
         console.error('Request call failed:', error);
       }
@@ -429,15 +429,16 @@ const EthereumTestScreen2: React.FC = () => {
             <Text selectable>{txHash}</Text>
             <Text style={styles.dataTitle}>
               Contract Address:<Text selectable>{SEPOLIA_TEST_CONTRACT_ADDRESS_TWO}</Text>
-              
-              { mintedTokenId && (
-                <>
-                <Text style={styles.dataTitle}>Token ID:</Text>
-                <Text selectable>{mintedTokenId}</Text>
-                </>
-
-              )}
             </Text>
+            <Text style={styles.dataTitle}>Token Id:</Text>
+            <Text style={styles.dataTitle}>Token ID:</Text>
+            {mintedTokenId ? (
+              <Text selectable style={styles.dataText}>
+                {mintedTokenId}
+              </Text>
+            ) : (
+              <Text style={styles.dataText}>Get Token ID Failed</Text>
+            )}
             <TouchableOpacity
               style={styles.linkButton}
               onPress={() => Linking.openURL(`https://sepolia.etherscan.io/tx/${txHash}`)}
@@ -448,7 +449,6 @@ const EthereumTestScreen2: React.FC = () => {
         )}
         {renderError('mint')}
       </View>
-
       <EstimationSection {...estimationProps} />
     </ScrollView>
   );
