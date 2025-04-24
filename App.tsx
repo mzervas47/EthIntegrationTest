@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { SafeAreaView, StatusBar, StyleSheet } from 'react-native';
+import { SafeAreaView, StatusBar, StyleSheet, Linking } from 'react-native';
 
 // Import our global polyfills - this MUST be the first import
 import './global';

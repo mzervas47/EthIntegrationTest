@@ -5,15 +5,15 @@ import {
   TouchableOpacity,
   ScrollView,
   ActivityIndicator,
-  Linking,
   TextInput,
+  Linking,
 } from 'react-native';
 import { ethers } from 'ethers';
 import SignClient from '@walletconnect/sign-client';
 import { SEPOLIA_TEST_CONTRACT_ADDRESS_TWO, WALLET_CONNECT_PROJECT_ID } from '@env';
 import { styles } from './styles';
 import { globalProvider, NFT_CONTRACT_ABI } from './config';
-import { buildMintTransaction, extractTokenId } from './transactionUtils';
+import { buildMintTransaction, extractTokenId, deepLink } from './transactionUtils';
 import { EstimationSection, EstimationProps } from './EstimationSection';
 
 const EthereumTestScreen2: React.FC = () => {
@@ -33,6 +33,30 @@ const EthereumTestScreen2: React.FC = () => {
   const [session, setSession] = useState<any | null>(null);
   const [contractCreated, setContractCreated] = useState<boolean>(false);
   const [mintedTokenId, setMintedTokenId] = useState<string | null>(null);
+
+  useEffect(() => {
+    Linking.getInitialURL()
+      .then((url) => {
+        if (url) {
+          console.log('[DEBUG inbound] initialURL ->', url);
+          handleDeepLink(url);
+        }
+      })
+      .catch((err) => console.error('[DEBUG inbound] getInitialURL error ->', err));
+
+    const sub = Linking.addEventListener('url', ({ url }) => {
+      if (url) {
+        console.log('[DEBUG inbound] Linking event ->', url);
+        handleDeepLink(url);
+      }
+    });
+
+    return () => sub.remove();
+  }, []);
+
+  function handleDeepLink(url: string) {
+    console.log('Opened via deep link:', url);
+  }
 
   type ErrorType = 'provider' | 'SDK' | 'wallet' | 'contract' | 'mint';
 
@@ -130,6 +154,11 @@ const EthereumTestScreen2: React.FC = () => {
         },
       });
 
+      (client as any).on('display_uri', ({ uri }: { uri: string }) => {
+        console.log('[DEBUG outbound] display_uri ->', uri);
+        deepLink(uri);
+      });
+
       setSignClient(client);
       return client;
     } catch (error: any) {
@@ -159,13 +188,9 @@ const EthereumTestScreen2: React.FC = () => {
         },
       });
 
-      console.log('WalletConnect URI: ', uri);
+      deepLink(uri);
 
-      if (uri) {
-        Linking.openURL(uri);
-      } else {
-        console.error('No URI available for wallet connection');
-      }
+      console.log('WalletConnect URI: ', uri);
 
       const sessionData = await approval();
       console.log('Session established: ', sessionData);
@@ -282,9 +307,8 @@ const EthereumTestScreen2: React.FC = () => {
 
         const tokenId = await extractTokenId(result, globalProvider, NFT_CONTRACT_ABI);
         setMintedTokenId(tokenId);
- 
-      } catch (error) {
-        console.error('Request call failed:', error);
+      } catch (error: any) {
+        console.log('Token ID return error:', error);
       }
     } catch (error: any) {
       console.error('Minting error:', error);
@@ -431,7 +455,6 @@ const EthereumTestScreen2: React.FC = () => {
               Contract Address:<Text selectable>{SEPOLIA_TEST_CONTRACT_ADDRESS_TWO}</Text>
             </Text>
             <Text style={styles.dataTitle}>Token Id:</Text>
-            <Text style={styles.dataTitle}>Token ID:</Text>
             {mintedTokenId ? (
               <Text selectable style={styles.dataText}>
                 {mintedTokenId}

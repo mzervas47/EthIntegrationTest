@@ -2,6 +2,7 @@
   "expo": {
     "name": "walletKit_poc",
     "slug": "walletKit_poc",
+    "scheme": "photohashpoc",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",

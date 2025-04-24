@@ -1,4 +1,5 @@
 import { ethers } from 'ethers';
+import { Linking } from 'react-native';
 
 export const prepareMintTransactionData = (tokenURI: string, abi: string[]) => {
   const iface = new ethers.Interface(abi);
@@ -81,3 +82,12 @@ export const extractTokenId = async (
     throw new Error('Failed to extract Token ID');
   }
 };
+
+export function deepLink(uri?: string) {
+    console.log('[DEBUG outbound] deepLink →', uri);
+    if (uri) {
+        Linking.openURL(uri);
+    } else {
+        console.error('No URI available for deep link');
+    }
+}
