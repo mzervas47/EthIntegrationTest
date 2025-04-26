@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   View,
   Text,
@@ -15,8 +15,6 @@ import { styles } from './styles';
 import { globalProvider, NFT_CONTRACT_ABI } from './config';
 import { buildMintTransaction, extractTokenId, deepLink } from './transactionUtils';
 import { EstimationSection, EstimationProps } from './EstimationSection';
-
-
 
 const EthereumTestScreen2: React.FC = () => {
   const [providerStatus, setProviderStatus] = useState<
@@ -35,6 +33,7 @@ const EthereumTestScreen2: React.FC = () => {
   const [session, setSession] = useState<any | null>(null);
   const [contractCreated, setContractCreated] = useState<boolean>(false);
   const [mintedTokenId, setMintedTokenId] = useState<string | null>(null);
+  const uriRef = useRef<string | null>(null);
 
   useEffect(() => {
     Linking.getInitialURL()
@@ -150,6 +149,7 @@ const EthereumTestScreen2: React.FC = () => {
           icons: ['https://photohash.io/icon.png'],
           redirect: {
             native: 'photohashpoc://',
+            universal: 'exp://10.0.0.103:8081',
           },
         },
       });
@@ -191,6 +191,10 @@ const EthereumTestScreen2: React.FC = () => {
       deepLink(uri);
 
       console.log('WalletConnect URI: ', uri);
+
+      uriRef.current = uri === undefined ? null : uri;
+
+      console.log('URI reference:', uriRef);
 
       const sessionData = await approval();
       console.log('Session established: ', sessionData);
@@ -290,6 +294,15 @@ const EthereumTestScreen2: React.FC = () => {
       console.log('Sending tx:', { ...tx, value: mintValueHex });
 
       const chainId = session.namespaces.eip155.chains[0].split(':')[1];
+
+      console.log('URI reference:', uriRef);
+      const mmUrl = uriRef.current
+        ? `https://metamask.app.link/wc?uri=${encodeURIComponent(uriRef.current)}`
+        : '';
+      console.log('[deepLink] opening ->', mmUrl);
+      Linking.openURL(mmUrl).catch((err) =>
+        console.error('Failed to open MetaMask universal link', err)
+      );
 
       try {
         const result = (await signClient.request({

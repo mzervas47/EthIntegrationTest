@@ -1,8 +1,9 @@
 {
   "expo": {
-    "name": "walletKit_poc",
-    "slug": "walletKit_poc",
+    "name": "PhotoHash POC" ,
+    "slug": "photohashpoc",
     "scheme": "photohashpoc",
+    
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -15,9 +16,23 @@
       "backgroundColor": "#ffffff"
     },
     "ios": {
+      "bundleIdentifier": "com.yourcompany.photohashpoc",
+      "infoPlist": {
+        "CFBundleURLTypes": [
+          { "CFBundleURLSchemes": ["photohashpoc"] }
+        ]
+      },
       "supportsTablet": true
     },
     "android": {
+      "package": "com.yourcompany.photohashpoc",
+      "intentFilters": [
+        {
+          "action": "VIEW",
+          "data": [{ "scheme": "photohashpoc", "host": "*" }],
+          "category": ["BROWSABLE","DEFAULT"]
+        }
+      ],
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
