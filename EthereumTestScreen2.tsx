@@ -16,6 +16,8 @@ import { globalProvider, NFT_CONTRACT_ABI } from './config';
 import { buildMintTransaction, extractTokenId, deepLink } from './transactionUtils';
 import { EstimationSection, EstimationProps } from './EstimationSection';
 
+
+
 const EthereumTestScreen2: React.FC = () => {
   const [providerStatus, setProviderStatus] = useState<
     'idle' | 'connecting' | 'connected' | 'error'
@@ -144,9 +146,7 @@ const EthereumTestScreen2: React.FC = () => {
         metadata: {
           name: 'PhotoHash POC',
           description: 'Testing and proving core features for PhotoHash',
-          // check importance of these metadata properties
           url: 'https://photohash.io',
-          // fix this
           icons: ['https://photohash.io/icon.png'],
           redirect: {
             native: 'photohashpoc://',
