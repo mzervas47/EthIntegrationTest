@@ -1,9 +1,8 @@
 {
   "expo": {
-    "name": "PhotoHash POC" ,
+    "name": "PhotoHash POC",
     "slug": "photohashpoc",
     "scheme": "photohashpoc",
-    
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -19,7 +18,11 @@
       "bundleIdentifier": "com.yourcompany.photohashpoc",
       "infoPlist": {
         "CFBundleURLTypes": [
-          { "CFBundleURLSchemes": ["photohashpoc"] }
+          {
+            "CFBundleURLSchemes": [
+              "photohashpoc"
+            ]
+          }
         ]
       },
       "supportsTablet": true
@@ -29,8 +32,16 @@
       "intentFilters": [
         {
           "action": "VIEW",
-          "data": [{ "scheme": "photohashpoc", "host": "*" }],
-          "category": ["BROWSABLE","DEFAULT"]
+          "data": [
+            {
+              "scheme": "photohashpoc",
+              "host": "*"
+            }
+          ],
+          "category": [
+            "BROWSABLE",
+            "DEFAULT"
+          ]
         }
       ],
       "adaptiveIcon": {
@@ -40,6 +51,11 @@
     },
     "web": {
       "favicon": "./assets/favicon.png"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "2a2f9a80-4355-4405-b7a5-323316ef4cdf"
+      }
     }
   }
 }
